@@ -2743,6 +2743,7 @@ let CSS = webpackify(`\n
 		\n height: 15px;
 		\n padding: 0 4px;
 		\n margin-top: 1px;
+    \n border-radius: 3px;
 	}
 
 	\n\n .inner .botTag {
@@ -2757,6 +2758,7 @@ let CSS = webpackify(`\n
 
 	\n\n .inner .rem__82f07.botTag__82f07 {
 		\n margin-top: .075em;
+    \n border-radius: .1875rem;
 	}
 
 	\n\n .inner .px__82f07 .botTagVerified__82f07 {
