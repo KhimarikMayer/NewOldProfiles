@@ -4432,6 +4432,7 @@ let CSS = webpackify(`\n
 
     \n
   }
+}
 
   \n :is(.topSectionNormal) {
 	\n .headerInfo:has(.botTag)+.profileButtons {
@@ -4449,6 +4450,8 @@ let CSS = webpackify(`\n
 			\n background: #5d6671 !important;
 			\n
 		}
+
+    \n
 	}
 }
 
