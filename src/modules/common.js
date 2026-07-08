@@ -1,5 +1,5 @@
 import { Webpack } from "betterdiscord";
-import { lazy } from "react";
+import React, { lazy } from "react";
 
 export const [
   entireProfileModal,
@@ -46,72 +46,71 @@ export const [
   ClampedText,
   Clamp,
   Card
-] = betterdiscord.Webpack.getBulk(
-  { filter: betterdiscord.Webpack.Filters.bySource("forceShowPremium", "pendingThemeColors", "profileThemeClassName") },
+] = /* @__PURE__ */ Webpack.getBulk(
+  { filter: /* @__PURE__ */ Webpack.Filters.bySource("forceShowPremium", "pendingThemeColors", "profileThemeClassName") },
   { filter: (x) => x.openUserProfileModal },
   { filter: (x) => x.Modal },
   { filter: (x) => x.t && x.t.formatToMarkdownString },
   { filter: (x) => x.button && x.hasText && !x.hasTrailing },
-  { filter: betterdiscord.Webpack.Filters.byStrings("display", "getUserOutbox") },
-  { filter: betterdiscord.Webpack.Filters.byKeys("gameState", "clickableImage") },
-  { filter: betterdiscord.Webpack.Filters.byKeys("anchor", "anchorUnderlineOnHover") },
-  { filter: betterdiscord.Webpack.Filters.byKeys("fetchApplication") },
-  { filter: betterdiscord.Webpack.Filters.byKeys("getGuildIconURL") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("onOpenProfile", "avatar") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("STREAMING", "isVROnline") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("translateSurrogatesToInlineEmoji") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("timestamps", ".TEXT_FEEDBACK_POSITIVE"), searchExports: true },
-  { filter: betterdiscord.Webpack.Filters.byStrings("start", "end", "duration", "percentage") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("activity", "USER_PROFILE_ACTIVITY_BUTTONS") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("activity", "PRESS_PLAY_ON_SPOTIFY_BUTTON") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("PRESS_JOIN_CALL_BUTTON") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("maxUsers", "guildId", "getNickname") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("channel", "isGuildStageVoice", "isDM", ".CONNECT") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("guildId", "name", "setPopoutRef", "onClose", "fetchGuildProfile") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("display", "getUserOutbox") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byKeys("gameState", "clickableImage") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byKeys("anchor", "anchorUnderlineOnHover") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byKeys("fetchApplication") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byKeys("getGuildIconURL") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("onOpenProfile", "avatar") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("STREAMING", "isVROnline") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("translateSurrogatesToInlineEmoji") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("timestamps", ".TEXT_FEEDBACK_POSITIVE"), searchExports: true },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("start", "end", "duration", "percentage") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("activity", "USER_PROFILE_ACTIVITY_BUTTONS") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("activity", "PRESS_PLAY_ON_SPOTIFY_BUTTON") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("PRESS_JOIN_CALL_BUTTON") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("maxUsers", "guildId", "getNickname") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("channel", "isGuildStageVoice", "isDM", ".CONNECT") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("guildId", "name", "setPopoutRef", "onClose", "fetchGuildProfile") },
   { filter: (x) => x.updateMemberRoles },
-  { filter: betterdiscord.Webpack.Filters.bySource("BOT", "invertColor") },
-  { filter: betterdiscord.Webpack.Filters.byPrototypeKeys("renderTooltip"), searchExports: true },
-  { filter: betterdiscord.Webpack.Filters.byStrings("showSubtext", "caretConfig"), searchExports: true },
-  { filter: betterdiscord.Webpack.Filters.byStrings("Unsupported animation config:"), searchExports: true },
-  { filter: betterdiscord.Webpack.Filters.byStrings("hasIcon", "switchIconsEnabled"), searchExports: true },
-  { filter: betterdiscord.Webpack.Filters.byStrings("connectionsRoleId", "USER_PROFILE_FETCH_START"), searchExports: true },
-  { filter: betterdiscord.Webpack.Filters.byStrings(".metadata)?void", ".EPISODE?"), searchExports: true },
+  { filter: /* @__PURE__ */ Webpack.Filters.bySource("BOT", "invertColor") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byPrototypeKeys("renderTooltip"), searchExports: true },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("showSubtext", "caretConfig"), searchExports: true },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("Unsupported animation config:"), searchExports: true },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("hasIcon", "switchIconsEnabled"), searchExports: true },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("connectionsRoleId", "USER_PROFILE_FETCH_START"), searchExports: true },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings(".metadata)?void", ".EPISODE?"), searchExports: true },
   { filter: (x) => x.openGameProfileModal },
-  { filter: betterdiscord.Webpack.Filters.byStrings("gameProfileModalChecks", "onOpened") },
-  { filter: (x) => betterdiscord.Webpack.Filters.byStrings("data-username-with-effects")(x?.type) },
-  { filter: betterdiscord.Webpack.Filters.byKeys("openUserSettings") },
-  { filter: betterdiscord.Webpack.Filters.byKeys("popAll") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("gameProfileModalChecks", "onOpened") },
+  { filter: (x) => Webpack.Filters.byStrings("data-username-with-effects")(x?.type) },
+  { filter: /* @__PURE__ */ Webpack.Filters.byKeys("openUserSettings") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byKeys("popAll") },
   { filter: (x) => x.unblockUser },
   { filter: (x) => x.showUnblockSuccessToast },
   { filter: (x) => x._dispatch, searchExports: true },
-  { filter: betterdiscord.Webpack.Filters.byKeys("GUILD_EMOJI", "GUILD_EMOJIS"), searchExports: true },
+  { filter: /* @__PURE__ */ Webpack.Filters.byKeys("GUILD_EMOJI", "GUILD_EMOJIS"), searchExports: true },
   { filter: (x) => typeof x === "object" && x.del && x.put, searchExports: true },
-  { filter: betterdiscord.Webpack.Filters.bySource("UserProfileModalV2", "defaultWishlistId") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("getMatchingInboxEntry", "getMatchingOutboxEntry") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("delay", "lineClamp") },
-  { filter: betterdiscord.Webpack.Filters.bySource("always-white", "lineClamp", "tabularNumbers", "?.css") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("warn", "preview", "messageType"), searchExports: true }
+  { filter: /* @__PURE__ */ Webpack.Filters.bySource("UserProfileModalV2", "defaultWishlistId") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("getMatchingInboxEntry", "getMatchingOutboxEntry") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("delay", "lineClamp") },
+  { filter: /* @__PURE__ */ Webpack.Filters.bySource("always-white", "lineClamp", "tabularNumbers", "?.css") },
+  { filter: /* @__PURE__ */ Webpack.Filters.byStrings("warn", "preview", "messageType"), searchExports: true }
 );
-export const NavigationUtils = betterdiscord.Webpack.getMangled("transitionTo - Transitioning to", {
-  transitionTo: betterdiscord.Webpack.Filters.byStrings("transitionTo - Transitioning to "),
-  replace: betterdiscord.Webpack.Filters.byStrings("Replacing route with"),
-  goBack: betterdiscord.Webpack.Filters.byStrings(".goBack()"),
-  goForward: betterdiscord.Webpack.Filters.byStrings(".goForward()"),
-  transitionToGuild: betterdiscord.Webpack.Filters.byStrings("transitionToGuild - Transitioning to")
+
+export const NavigationUtils = Webpack.getMangled("transitionTo - Transitioning to", {
+  transitionTo: Webpack.Filters.byStrings("transitionTo - Transitioning to "),
+  replace: Webpack.Filters.byStrings("Replacing route with"),
+  goBack: Webpack.Filters.byStrings(".goBack()"),
+  goForward: Webpack.Filters.byStrings(".goForward()"),
+  transitionToGuild: Webpack.Filters.byStrings("transitionToGuild - Transitioning to")
 });
-export const ModalSystem$1 = betterdiscord.Webpack.getMangled(".modalKey?", {
-  openModalLazy: betterdiscord.Webpack.Filters.byStrings(".modalKey?"),
-  openModal: betterdiscord.Webpack.Filters.byStrings(",instant:"),
-  closeModal: betterdiscord.Webpack.Filters.byStrings(".onCloseCallback()"),
-  closeAllModals: betterdiscord.Webpack.Filters.byStrings(".getState();for")
+
+export const ModalSystem$1 = Webpack.getMangled(".modalKey?", {
+  openModalLazy: Webpack.Filters.byStrings(".modalKey?"),
+  openModal: Webpack.Filters.byStrings(",instant:"),
+  closeModal: Webpack.Filters.byStrings(".onCloseCallback()"),
+  closeAllModals: Webpack.Filters.byStrings(".getState();for")
 });
-betterdiscord.Webpack.getMangled(".zROXEV", {
-  Button: betterdiscord.Webpack.Filters.not(betterdiscord.Webpack.Filters.byStrings("aria-label")),
-  ButtonWithTooltip: betterdiscord.Webpack.Filters.byStrings("tooltipText")
+
+Webpack.getMangled(".zROXEV", {
+  Button: Webpack.Filters.not(Webpack.Filters.byStrings("aria-label")),
+  ButtonWithTooltip: Webpack.Filters.byStrings("tooltipText")
 });
-export const RoleRenderer = react.lazy(async () => ({
-  default: await betterdiscord.Webpack.waitForModule(
-    betterdiscord.Webpack.Filters.byStrings("roles", "guild", "canRemoveAnyRoles", "map(e"),
-    { searchExports: true }
-  )
-}));
+
+export const RoleRenderer = lazy(async () => ({ default: (await Webpack.waitForModule(Webpack.Filters.byStrings('roles', 'guild', 'canRemoveAnyRoles', 'map(e'), {searchExports: true} ))}));
