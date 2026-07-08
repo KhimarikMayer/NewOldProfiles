@@ -3,10 +3,10 @@ import { getIntlString } from './getIntlString';
 import { tabs } from './tabs';
 
 export const locale = {
-    Sections: {
+  Sections: {
     MUTUAL_FRIENDS: tabs.FRIENDS,
     MUTUAL_GUILDS: tabs.SERVERS,
-    WIDGETS: betterdiscord.Data.load("boardTab") ? tabs.BOARD : null
+    WIDGETS: Data.load('boardTab') ? tabs.BOARD : null
   },
   Strings: {
     ABOUT_ME: () => getIntlString("61W33d"),
