@@ -45,7 +45,8 @@ export const [
     ContentInventoryEntryByActivity,
     ClampedText,
     Clamp,
-    Card
+    Card,
+    CustomWidgetCard
 ] = /* @__PURE__ */ Webpack.getBulk(
     { filter: /* @__PURE__ */ Webpack.Filters.bySource('forceShowPremium', 'pendingThemeColors', 'profileThemeClassName') },
     { filter: x => x.openUserProfileModal },
@@ -88,9 +89,9 @@ export const [
     { filter: x => typeof x === "object" && x.del && x.put, searchExports: true },
     { filter: /* @__PURE__ */ Webpack.Filters.bySource('UserProfileModalV2', 'defaultWishlistId') },
     { filter: /* @__PURE__ */ Webpack.Filters.byStrings('getMatchingInboxEntry', 'getMatchingOutboxEntry') },
-    { filter: /* @__PURE__ */ Webpack.Filters.byStrings('delay', 'lineClamp') },
-    { filter: /* @__PURE__ */ Webpack.Filters.bySource('always-white', 'lineClamp', 'tabularNumbers', '?.css') },
-    { filter: /* @__PURE__ */ Webpack.Filters.byStrings('warn', 'preview', 'messageType'), searchExports: true }
+    { filter: /* @__PURE__ */ Webpack.Filters.bySource('currentColor', ']]?.css') },
+    { filter: /* @__PURE__ */ Webpack.Filters.byStrings('warn', 'preview', 'messageType'), searchExports: true },
+    { filter: /* @__PURE__ */ Webpack.Filters.byStrings('instanceof', 'widget'), searchExports: true }
 );
 
 export const NavigationUtils = /* @__PURE__ */ Webpack.getMangled("transitionTo - Transitioning to", {
