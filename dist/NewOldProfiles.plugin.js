@@ -2,7 +2,8 @@
  * @name NewOldProfiles
  * @author KingGamingYT
  * @description A full, largely accurate restoration of Discord's profile layout used from 2018 to 2021. Features modern additions such as banners, theme colors, and guild tags.
- * @version 1.3.1
+ * @version 1.3.2
+ * @runAt idle
  */
 
 /*@cc_on
@@ -79,7 +80,8 @@ const [
   ContentInventoryEntryByActivity,
   ClampedText,
   Clamp,
-  Card
+  Card,
+	CustomWidgetCard
 ] = betterdiscord.Webpack.getBulk(
   { filter: betterdiscord.Webpack.Filters.bySource("forceShowPremium", "pendingThemeColors", "profileThemeClassName") },
   { filter: (x) => x.openUserProfileModal },
@@ -123,8 +125,9 @@ const [
   { filter: betterdiscord.Webpack.Filters.bySource("UserProfileModalV2", "defaultWishlistId") },
   { filter: betterdiscord.Webpack.Filters.byStrings("getMatchingInboxEntry", "getMatchingOutboxEntry") },
   { filter: betterdiscord.Webpack.Filters.byStrings("delay", "lineClamp") },
-  { filter: betterdiscord.Webpack.Filters.bySource("always-white", "lineClamp", "tabularNumbers", "?.css") },
-  { filter: betterdiscord.Webpack.Filters.byStrings("warn", "preview", "messageType"), searchExports: true }
+  { filter: betterdiscord.Webpack.Filters.bySource("currentColor", "]]?.css") },
+	{ filter: betterdiscord.Webpack.Filters.byStrings("warn", "preview", "messageType"), searchExports: true },
+	{ filter: betterdiscord.Webpack.Filters.byStrings("instanceof", "widget"), searchExports: true }
 );
 const NavigationUtils = betterdiscord.Webpack.getMangled("transitionTo - Transitioning to", {
   transitionTo: betterdiscord.Webpack.Filters.byStrings("transitionTo - Transitioning to "),
@@ -1782,11 +1785,11 @@ function VoiceCard({ data, voice, stream }) {
 }
 
 // components/activities/cardStream.jsx
-function StreamCard({ user, voice }) {
+function StreamCard({ data, user, voice }) {
   const streams = useStateFromStores([StreamStore], () => StreamStore.getAllApplicationStreamsForChannel(voice));
   const _streams = streams.filter((streams2) => streams2 && streams2.ownerId == user.id);
   const channel = useStateFromStores([ChannelStore], () => ChannelStore.getChannel(voice));
-  return _streams.map((stream) => BdApi.React.createElement("div", { className: "activityProfile activity" }, BdApi.React.createElement("div", { className: "activityProfileContainerStream" }, BdApi.React.createElement(ActivityHeader$1, { voice, stream }), BdApi.React.createElement("div", { className: "bodyNormal", style: { display: "flex", alignItems: "center", width: "auto" } }, BdApi.React.createElement(StreamImageAsset, { stream }), BdApi.React.createElement(FlexInfo, { className: "contentImagesProfile content", voice, stream, channel, type: "STREAM" }), BdApi.React.createElement("div", { className: "buttonsWrapper actionsProfile" }, BdApi.React.createElement(CallButtons, { channel }))))));
+  return _streams.map((stream) => BdApi.React.createElement("div", { className: "activityProfile activity" }, BdApi.React.createElement("div", { className: "activityProfileContainerStream" }, BdApi.React.createElement(ActivityHeader$1, { voice, stream }), BdApi.React.createElement("div", { className: "bodyNormal", style: { display: "flex", alignItems: "center", width: "auto" } }, BdApi.React.createElement(StreamImageAsset, { stream }), BdApi.React.createElement(FlexInfo, { className: "contentImagesProfile content", voice, stream, channel, type: "STREAM" }), BdApi.React.createElement("div", { className: "buttonsWrapper actionsProfile" }, BdApi.React.createElement(CallButtons, { channel, onClose: () => data.onClose() }))))));
 }
 
 // components/activities/cardCustom.jsx
@@ -2295,8 +2298,9 @@ function ConnectionCards({ user, connections }) {
   if (connections.length == 0) return;
   return BdApi.React.createElement("div", { className: "userInfoSection", style: { borderTop: "1px solid var(--background-modifier-accent, var(--background-mod-normal))" } }, BdApi.React.createElement("div", { className: "connectedAccounts" }, connections.map((connection) => BdApi.React.createElement(ConnectionComponent, { connectedAccount: connection, userId: user.id }))));
 }
-function PrivateProfileNotice({ username }) {
-  return BdApi.React.createElement("div", { className: "userInfoSection" }, BdApi.React.createElement(Card, { messageType: "info", key: "info" }, locale.Strings.PRIVATE_PROFILE_WARNING({ username })));
+function PrivateProfileNotice({ username, displayName, nick }) {
+  const displayUsername = nick || displayName || username;
+  return BdApi.React.createElement("div", { className: "userInfoSection" }, BdApi.React.createElement(Card, { messageType: "info", key: "info" }, locale.Strings.PRIVATE_PROFILE_WARNING({ username: displayUsername })));
 }
 
 // components/builders/tabs/common/streamerModeView.jsx
@@ -2312,10 +2316,13 @@ function Scroller({ children, type, padding }) {
 // components/builders/tabs/tabAbout.jsx
 function AboutTab({ data, user, currentUser, displayProfile }) {
   const connections = displayProfile._userProfile.connectedAccounts;
+  const serverMember = displayProfile.guildId ? GuildMemberStore.getMember(displayProfile.guildId, user.id) : null;
+  const nick = serverMember?.nick;
+  const displayName = user.globalName;
   if (StreamerModeStore.hidePersonalInformation) {
     return BdApi.React.createElement(Scroller, { type: "INFO" }, BdApi.React.createElement(StreamerModeView, null));
   }
-  return BdApi.React.createElement(Scroller, { type: "INFO", padding: 12 }, displayProfile?.private && BdApi.React.createElement(PrivateProfileNotice, { username: user.globalName || user.username }), displayProfile?.pronouns && BdApi.React.createElement(PronounsBuilder, { displayProfile }), BdApi.React.createElement(BioBuilder, { displayProfile }), BdApi.React.createElement(RoleBuilder, { user, data, displayProfile }), BdApi.React.createElement(MemberDateBuilder, { data, user }), BdApi.React.createElement(NoteBuilder, { user }), betterdiscord.Data.load("boardTab") && user.id === currentUser.id && BdApi.React.createElement(BoardButtonBuilder, { user }), BdApi.React.createElement(ConnectionCards, { user, connections }));
+  return BdApi.React.createElement(Scroller, { type: "INFO", padding: 12 }, displayProfile?.private && BdApi.React.createElement(PrivateProfileNotice, { username: user.username, displayName: displayName, nick: nick }), displayProfile?.pronouns && BdApi.React.createElement(PronounsBuilder, { displayProfile }), BdApi.React.createElement(BioBuilder, { displayProfile }), BdApi.React.createElement(RoleBuilder, { user, data, displayProfile }), BdApi.React.createElement(MemberDateBuilder, { data, user }), BdApi.React.createElement(NoteBuilder, { user }), betterdiscord.Data.load("boardTab") && user.id === currentUser.id && BdApi.React.createElement(BoardButtonBuilder, { user }), BdApi.React.createElement(ConnectionCards, { user, connections }));
 }
 
 // components/builders/widgets/builder.jsx
@@ -2334,7 +2341,7 @@ function WidgetBuilder({ widget, user }) {
   const header = getWidgetIntl(widget);
   react.useEffect(() => {
     (async () => {
-      if (isLoaded) return;
+      if (isLoaded || !gameIds.length) return;
       const urlSearch = new URLSearchParams(gameIds.map((x) => ["application_ids", x])).toString();
       const applicationPublic = await RestAPI.get({ url: Endpoints.APPLICATIONS_PUBLIC, query: urlSearch });
       Dispatcher.dispatch({
@@ -2345,7 +2352,7 @@ function WidgetBuilder({ widget, user }) {
       setIsLoaded(true);
     })();
   }, [gameIds]);
-  return BdApi.React.createElement(BoardBuilder, { widget, header, games, user });
+  return widget.type === "application" ? BdApi.React.createElement("div", { className: "userInfoSection" }, BdApi.React.createElement(CustomWidgetCard, { index: 0, user, widget, key: `application-${widget.applicationId}` })) : BdApi.React.createElement(BoardBuilder, { widget, header, games, user });
 }
 
 // components/builders/tabs/tabBoard.jsx
@@ -2711,6 +2718,9 @@ let CSS = webpackify(`\n
     --badge-background-brand: var(--blurple);
     --background-brand: var(--blurple);
     --bg-brand: var(--blurple);
+    --control-primary-background-default: var(--blurple) !important;
+    --control-primary-background-hover: #677bc4 !important;
+    --control-primary-background-active: #5b6eae !important;
     --interactive-text-default: color-mix(in oklab, hsl(216 calc(var(--saturation-factor) * 4%) 74% /1) 100%, var(--custom-theme-text-color, #000) var(--custom-theme-text-color-amount, 0%));
     --text-subtle: color-mix(in oklab, hsl(216 calc(var(--saturation-factor) * 4%) 74% /1) 100%, var(--custom-theme-text-color, #000) var(--custom-theme-text-color-amount, 0%));
     --header-secondary: color-mix(in oklab, hsl(216 calc(var(--saturation-factor) * 4%) 74% /1) 100%, var(--custom-theme-text-color, #000) var(--custom-theme-text-color-amount, 0%));
@@ -2723,6 +2733,65 @@ let CSS = webpackify(`\n
     --text-link: color-mix(in oklab, hsl(197 calc(var(--saturation-factor)*100%) 45% /1) 100%, var(--custom-theme-text-color, #000) var(--custom-theme-text-color-amount, 0%));
   }
 
+  \n\n .inner .member-perms-header {
+    \n color: var(--channels-default);
+    \n font-weight: 700;
+    \n margin-top: 10px;
+    \n margin-bottom: 10px;
+    \n text-transform: uppercase;
+  }
+
+  \n\n .inner .member-perms {
+    \n margin-top: 0;
+  }
+
+  \n\n .inner .wrapper_f61d60 {
+    \n  background: var(--brand-experiment-10a);
+    \n  color: var(--bg-brand);
+  }
+
+  \n\n .inner .interactive:hover {
+		\n background: var(--bg-brand);
+		\n color: var(--white);
+	}
+
+  \n\n .inner path[d^="M10.99 3.16A1 1 0 1 0 9 2.84L8.15 8H4a1 1 0 0 0 0 2h3.82l-.67 4H3a1 1 0 1 0 0 2h3.82l-.8 4.84a1 1 0 0 0 1.97.32L8.85 16h4.97l-.8 4.84a1 1 0 0 0 1.97.32l.86-5.16H20a1 1 0 1 0 0-2h-3.82l.67-4H21a1 1 0 1 0 0-2h-3.82l.8-4.84a1 1 0 1 0-1.97-.32L15.15 8h-4.97l.8-4.84ZM14.15 14l.67-4H9.85l-.67 4h4.97Z"] {
+		\n d: path("M5.88657 21C5.57547 21 5.3399 20.7189 5.39427 20.4126L6.00001 17H2.59511C2.28449 17 2.04905 16.7198 2.10259 16.4138L2.27759 15.4138C2.31946 15.1746 2.52722 15 2.77011 15H6.35001L7.41001 9H4.00511C3.69449 9 3.45905 8.71977 3.51259 8.41381L3.68759 7.41381C3.72946 7.17456 3.93722 7 4.18011 7H7.76001L8.39677 3.41262C8.43914 3.17391 8.64664 3 8.88907 3H9.87344C10.1845 3 10.4201 3.28107 10.3657 3.58738L9.76001 7H15.76L16.3968 3.41262C16.4391 3.17391 16.6466 3 16.8891 3H17.8734C18.1845 3 18.4201 3.28107 18.3657 3.58738L17.76 7H21.1649C21.4755 7 21.711 7.28023 21.6574 7.58619L21.4824 8.58619C21.4406 8.82544 21.2328 9 20.9899 9H17.41L16.35 15H19.7549C20.0655 15 20.301 15.2802 20.2474 15.5862L20.0724 16.5862C20.0306 16.8254 19.8228 17 19.5799 17H16L15.3632 20.5874C15.3209 20.8261 15.1134 21 14.8709 21H13.8866C13.5755 21 13.3399 20.7189 13.3943 20.4126L14 17H8.00001L7.36325 20.5874C7.32088 20.8261 7.11337 21 6.87094 21H5.88657ZM9.41045 9L8.35045 15H14.3504L15.4104 9H9.41045Z");
+	}
+
+  \n\n .inner path[d^="M18.91 12.98a5.45 5.45 0 0 1 2.18 6.2c-.1.33-.09.68.1.96l.83 1.32a1 1 0 0 1-.84 1.54h-5.5A5.6 5.6 0 0 1 10 17.5a5.6 5.6 0 0 1 5.68-5.5c1.2 0 2.32.36 3.23.98Z"] {
+		d: path("M7.8831 17.6243H2.8125C2.3649 17.6243 1.9357 17.4464 1.6193 17.13 1.3028 16.8136 1.125 16.3843 1.125 15.9367V9.7492C1.125 7.6607 1.9547 5.6576 3.4315 4.1808 4.9084 2.7039 6.9114 1.8743 9 1.8743 11.0886 1.8743 13.0916 2.7039 14.5685 4.1808 15.2344 4.8467 15.7687 5.6197 16.1548 6.4592 17.8921 6.7168 19.5016 7.5495 20.7186 8.835 22.1033 10.2976 22.875 12.2351 22.875 14.2493V20.4367C22.875 20.8843 22.6973 21.3136 22.3807 21.63 22.0643 21.9464 21.635 22.1243 21.1876 22.1243H15C13.3714 22.1243 11.7828 21.6194 10.4529 20.6794 9.3445 19.896 8.4612 18.8423 7.8831 17.6243ZM5.0225 5.7718C6.0774 4.7169 7.5081 4.1243 9 4.1243 10.4918 4.1243 11.9226 4.7169 12.9775 5.7718 14.0323 6.8267 14.625 8.2574 14.625 9.7493 14.625 11.2411 14.0323 12.6719 12.9775 13.7268 11.9226 14.7816 10.4919 15.3743 9 15.3743H8.6432C8.6372 15.3742 8.6312 15.3742 8.6252 15.3743H3.375V9.7493C3.375 8.2574 3.9676 6.8267 5.0225 5.7718ZM10.4064 17.4977C10.7732 18.0158 11.2271 18.4714 11.7516 18.842 12.7016 19.5137 13.8366 19.8743 15 19.8743H20.625V14.2493C20.625 12.8106 20.0737 11.4266 19.0847 10.3819 18.4565 9.7184 17.682 9.2237 16.8324 8.931 16.8607 9.2016 16.875 9.4747 16.875 9.7493 16.875 11.8378 16.0453 13.8409 14.5685 15.3178 13.4275 16.4587 11.9724 17.2134 10.4064 17.4977Z");
+		fill-rule: evenodd;
+	}
+
+	\n\n .inner path[d^="M18.91 12.98a5.45 5.45 0 0 1 2.18 6.2c-.1.33-.09.68.1.96l.83 1.32a1 1 0 0 1-.84 1.54h-5.5A5.6 5.6 0 0 1 10 17.5a5.6 5.6 0 0 1 5.68-5.5c1.2 0 2.32.36 3.23.98Z"]~path {
+		display: none;
+	}
+
+	\n\n .inner path[d^="M13.58 3.23c.24-.33.16-.86-.24-.96C12.59 2.1 11.8 2 11 2c-4.97 0-9 3.58-9 8 0 1.5.47 2.91 1.28 4.11.14.21.12.49-.06.67l-1.51 1.51A1 1 0 0 0 2.4 18h5.1a.5.5 0 0 0 .49-.5c0-3.17 2-5.82 4.77-6.94.29-.11.43-.45.34-.75A3 3 0 0 1 13 9V5c0-.66.22-1.28.58-1.77ZM18.91 12.98a5.45 5.45 0 0 1 2.18 6.2c-.1.33-.09.68.1.96l.83 1.32a1 1 0 0 1-.84 1.54h-5.5A5.6 5.6 0 0 1 10 17.5a5.6 5.6 0 0 1 5.68-5.5c1.2 0 2.32.36 3.23.98Z"] {
+		d: path("M13 4C13 3.66767 13.0405 3.3448 13.1169 3.03607C11.8881 2.28254 10.4651 1.87427 8.99999 1.87427C6.91141 1.87427 4.90838 2.70395 3.43153 4.1808C1.95469 5.65764 1.125 7.66067 1.125 9.74925V15.9368C1.125 16.3843 1.30279 16.8135 1.61926 17.13C1.93573 17.4465 2.36495 17.6243 2.8125 17.6243H7.88314C8.46123 18.8423 9.34451 19.896 10.4529 20.6794C11.7828 21.6195 13.3714 22.1242 15 22.1243H21.1875C21.6351 22.1243 22.0643 21.9465 22.3808 21.63C22.6972 21.3135 22.875 20.8843 22.875 20.4368V14.2492C22.875 13.3832 22.7323 12.5314 22.4596 11.7253C22.0074 11.9026 21.5151 12 21 12H20.1557C20.4625 12.7033 20.625 13.4682 20.625 14.2493V19.8743H15C13.8365 19.8743 12.7017 19.5136 11.7516 18.8421C11.2271 18.4713 10.7732 18.0159 10.4064 17.4977C11.9724 17.2135 13.4275 16.4587 14.5685 15.3177C15.5076 14.3786 16.185 13.2267 16.5538 11.9754C15.7646 11.8878 15.0447 11.5706 14.4624 11.0921C14.2192 12.0813 13.7097 12.9945 12.9775 13.7267C11.9226 14.7816 10.4919 15.3743 9.00001 15.3743H3.375V9.74925C3.375 8.25741 3.96763 6.82668 5.02252 5.77179C6.07741 4.7169 7.50815 4.12427 8.99999 4.12427C10.4918 4.12427 11.9226 4.7169 12.9775 5.77179L13 5.79444V4Z M21.025 4V5C21.5635 5 22 5.43652 22 5.975V9C22 9.55228 21.5523 10 21 10H17C16.4477 10 16 9.55228 16 9V6C16 5.44772 16.4477 5 17 5V4C17 2.88 17.95 2 19 2C20.05 2 21.025 2.88 21.025 4ZM18 5H20V4C20 3.42857 19.5333 3 19 3C18.4667 3 18 3.42857 18 4V5Z");
+	}
+
+	\n\n .inner path[d^="M14.8 3.34a.48.48 0 0 0-.24-.69A9.94 9.94 0 0 0 11 2c-4.97 0-9 3.58-9 8 0 1.5.47 2.91 1.28 4.11.14.21.12.49-.06.67l-1.51 1.51A1 1 0 0 0 2.4 18h5.1a.5.5 0 0 0 .49-.5c0-2.86 1.62-5.3 3.97-6.56.28-.15.38-.51.25-.8a2.87 2.87 0 0 1 .18-2.61l2.4-4.19ZM18.91 12.98a5.45 5.45 0 0 1 2.18 6.2c-.1.33-.09.68.1.96l.83 1.32a1 1 0 0 1-.84 1.54h-5.5A5.6 5.6 0 0 1 10 17.5a5.6 5.6 0 0 1 5.68-5.5c1.2 0 2.32.36 3.23.98Z"] {
+		d: path("M13 4C13 3.66767 13.0405 3.3448 13.1169 3.03607C11.8881 2.28254 10.4651 1.87427 8.99999 1.87427C6.91141 1.87427 4.90838 2.70395 3.43153 4.1808C1.95469 5.65764 1.125 7.66067 1.125 9.74925V15.9368C1.125 16.3843 1.30279 16.8135 1.61926 17.13C1.93573 17.4465 2.36495 17.6243 2.8125 17.6243H7.88314C8.46123 18.8423 9.34451 19.896 10.4529 20.6794C11.7828 21.6195 13.3714 22.1242 15 22.1243H21.1875C21.6351 22.1243 22.0643 21.9465 22.3808 21.63C22.6972 21.3135 22.875 20.8843 22.875 20.4368V14.2492C22.875 13.3832 22.7323 12.5314 22.4596 11.7253C22.0074 11.9026 21.5151 12 21 12H20.1557C20.4625 12.7033 20.625 13.4682 20.625 14.2493V19.8743H15C13.8365 19.8743 12.7017 19.5136 11.7516 18.8421C11.2271 18.4713 10.7732 18.0159 10.4064 17.4977C11.9724 17.2135 13.4275 16.4587 14.5685 15.3177C15.5076 14.3786 16.185 13.2267 16.5538 11.9754C15.7646 11.8878 15.0447 11.5706 14.4624 11.0921C14.2192 12.0813 13.7097 12.9945 12.9775 13.7267C11.9226 14.7816 10.4919 15.3743 9.00001 15.3743H3.375V9.74925C3.375 8.25741 3.96763 6.82668 5.02252 5.77179C6.07741 4.7169 7.50815 4.12427 8.99999 4.12427C10.4918 4.12427 11.9226 4.7169 12.9775 5.77179L13 5.79444V4Z M22.2821 7.55654L19.9173 2.80204C19.5491 2.06172 18.4885 2.05951 18.1172 2.79829L15.7274 7.55279C15.3932 8.21769 15.8793 9 16.6265 9L21.3811 9C22.1265 8.99999 22.6126 8.22119 22.2821 7.55654ZM19.5237 4H18.5184L18.5184 6.5H19.5237V4ZM19.021 8C18.7436 8 18.5184 7.77589 18.5184 7.49887C18.5184 7.22224 18.7436 6.99773 19.021 6.99773C19.2985 6.99773 19.5237 7.22224 19.5237 7.49887C19.5237 7.77589 19.2985 8 19.021 8Z");
+	}
+
+  \n\n .inner path[d^="M12 3a1 1 0 0 0-1-1h-.06a1 1 0 0 0-.74.32L5.92 7H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.92l4.28 4.68a1 1 0 0 0 .74.32H11a1 1 0 0 0 1-1V3ZM15.1 20.75c-.58.14-1.1-.33-1.1-.92v-.03c0-.5.37-.92.85-1.05a7 7 0 0 0 0-13.5A1.11 1.11 0 0 1 14 4.2v-.03c0-.6.52-1.06 1.1-.92a9 9 0 0 1 0 17.5Z"] {
+		d: path("M11.383 3.07904C11.009 2.92504 10.579 3.01004 10.293 3.29604L6 8.00204H3C2.45 8.00204 2 8.45304 2 9.00204V15.002C2 15.552 2.45 16.002 3 16.002H6L10.293 20.71C10.579 20.996 11.009 21.082 11.383 20.927C11.757 20.772 12 20.407 12 20.002V4.00204C12 3.59904 11.757 3.23204 11.383 3.07904ZM14 5.00195V7.00195C16.757 7.00195 19 9.24595 19 12.002C19 14.759 16.757 17.002 14 17.002V19.002C17.86 19.002 21 15.863 21 12.002C21 8.14295 17.86 5.00195 14 5.00195ZM14 9.00195C15.654 9.00195 17 10.349 17 12.002C17 13.657 15.654 15.002 14 15.002V13.002C14.551 13.002 15 12.553 15 12.002C15 11.451 14.551 11.002 14 11.002V9.00195Z");
+	}
+
+	\n\n .inner path[d^="M12 3a1 1 0 0 0-1-1h-.06a1 1 0 0 0-.74.32L5.92 7H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.92l4.28 4.68a1 1 0 0 0 .74.32H11a1 1 0 0 0 1-1V3ZM15.1 20.75c-.58.14-1.1-.33-1.1-.92v-.03c0-.5.37-.92.85-1.05a7 7 0 0 0 0-13.5A1.11 1.11 0 0 1 14 4.2v-.03c0-.6.52-1.06 1.1-.92a9 9 0 0 1 0 17.5Z"]~path {
+		display: none;
+	}
+
+  \n\n .inner .icon_b75563 {
+		\n margin-bottom: 0.45rem;
+	}
+
+  \n\n .markup__75297 code {
+    \n background: var(--background-secondary); \n border: 1px solid var(--background-tertiary); \n
+  }
+
   \n\n .inner path[d^="M14.5 8a3 3 0 1 0-2.7-4.3c-.2.4.06.86.44 1.12a5 5 0 0 1 2.14 3.08c.01.06.06.1.12.1ZM18.44 17.27c.15.43.54.73 1 .73h1.06c.83 0 1.5-.67 1.5-1.5a7.5 7.5 0 0 0-6.5-7.43c-.55-.08-.99.38-1.1.92-.06.3-.15.6-.26.87-.23.58-.05 1.3.47 1.63a9.53 9.53 0 0 1 3.83 4.78ZM12.5 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2 20.5a7.5 7.5 0 0 1 15 0c0 .83-.67 1.5-1.5 1.5a.2.2 0 0 1-.2-.16c-.2-.96-.56-1.87-.88-2.54-.1-.23-.42-.15-.42.1v2.1a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2.1c0-.25-.31-.33-.42-.1-.32.67-.67 1.58-.88 2.54a.2.2 0 0 1-.2.16A1.5 1.5 0 0 1 2 20.5Z"] {
     \n d: path("M14 8.00598C14 10.211 12.206 12.006 10 12.006C7.795 12.006 6 10.211 6 8.00598C6 5.80098 7.794 4.00598 10 4.00598C12.206 4.00598 14 5.80098 14 8.00598ZM2 19.006C2 15.473 5.29 13.006 10 13.006C14.711 13.006 18 15.473 18 19.006V20.006H2V19.006Z M20.0001 20.006H22.0001V19.006C22.0001 16.4433 20.2697 14.4415 17.5213 13.5352C19.0621 14.9127 20.0001 16.8059 20.0001 19.006V20.006Z M14.8834 11.9077C16.6657 11.5044 18.0001 9.9077 18.0001 8.00598C18.0001 5.96916 16.4693 4.28218 14.4971 4.0367C15.4322 5.09511 16.0001 6.48524 16.0001 8.00598C16.0001 9.44888 15.4889 10.7742 14.6378 11.8102C14.7203 11.8418 14.8022 11.8743 14.8834 11.9077Z");
   }
@@ -2732,7 +2801,7 @@ let CSS = webpackify(`\n
 	}
 
   \n\n .inner path[d="M20.97 4.06c0 .18.08.35.24.43.55.28.9.82 1.04 1.42.3 1.24.75 3.7.75 7.09v4.91a3.09 3.09 0 0 1-5.85 1.38l-1.76-3.51a1.09 1.09 0 0 0-1.23-.55c-.57.13-1.36.27-2.16.27s-1.6-.14-2.16-.27c-.49-.11-1 .1-1.23.55l-1.76 3.51A3.09 3.09 0 0 1 1 17.91V13c0-3.38.46-5.85.75-7.1.15-.6.49-1.13 1.04-1.4a.47.47 0 0 0 .24-.44c0-.7.48-1.32 1.2-1.47l2.93-.62c.5-.1 1 .06 1.36.4.35.34.78.71 1.28.68a42.4 42.4 0 0 1 4.4 0c.5.03.93-.34 1.28-.69.35-.33.86-.5 1.36-.39l2.94.62c.7.15 1.19.78 1.19 1.47ZM20 7.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM15.5 12a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM5 7a1 1 0 0 1 2 0v1h1a1 1 0 0 1 0 2H7v1a1 1 0 1 1-2 0v-1H4a1 1 0 1 1 0-2h1V7Z"] {
-    d: path("M5.66487 5H18.3351C19.9078 5 21.2136 6.21463 21.3272 7.78329L21.9931 16.9774C22.0684 18.0165 21.287 18.9198 20.248 18.9951C20.2026 18.9984 20.1572 19 20.1117 19C18.919 19 17.8785 18.1904 17.5855 17.0342L17.0698 15H6.93015L6.41449 17.0342C6.12142 18.1904 5.08094 19 3.88826 19C2.84645 19 2.00189 18.1554 2.00189 17.1136C2.00189 17.0682 2.00354 17.0227 2.00682 16.9774L2.67271 7.78329C2.78632 6.21463 4.0921 5 5.66487 5ZM14.5 10C15.3284 10 16 9.32843 16 8.5C16 7.67157 15.3284 7 14.5 7C13.6716 7 13 7.67157 13 8.5C13 9.32843 13.6716 10 14.5 10ZM18.5 13C19.3284 13 20 12.3284 20 11.5C20 10.6716 19.3284 10 18.5 10C17.6716 10 17 10.6716 17 11.5C17 12.3284 17.6716 13 18.5 13ZM6.00001 9H4.00001V11H6.00001V13H8.00001V11H10V9H8.00001V7H6.00001V9Z");
+    \n d: path("M5.66487 5H18.3351C19.9078 5 21.2136 6.21463 21.3272 7.78329L21.9931 16.9774C22.0684 18.0165 21.287 18.9198 20.248 18.9951C20.2026 18.9984 20.1572 19 20.1117 19C18.919 19 17.8785 18.1904 17.5855 17.0342L17.0698 15H6.93015L6.41449 17.0342C6.12142 18.1904 5.08094 19 3.88826 19C2.84645 19 2.00189 18.1554 2.00189 17.1136C2.00189 17.0682 2.00354 17.0227 2.00682 16.9774L2.67271 7.78329C2.78632 6.21463 4.0921 5 5.66487 5ZM14.5 10C15.3284 10 16 9.32843 16 8.5C16 7.67157 15.3284 7 14.5 7C13.6716 7 13 7.67157 13 8.5C13 9.32843 13.6716 10 14.5 10ZM18.5 13C19.3284 13 20 12.3284 20 11.5C20 10.6716 19.3284 10 18.5 10C17.6716 10 17 10.6716 17 11.5C17 12.3284 17.6716 13 18.5 13ZM6.00001 9H4.00001V11H6.00001V13H8.00001V11H10V9H8.00001V7H6.00001V9Z");
   }
 
   \n\n .inner .rem__82f07 .botText__82f07 {
@@ -2779,7 +2848,7 @@ let CSS = webpackify(`\n
 		\n width: .9375rem;
 		\n height: .9375rem;
 		\n margin-left: -.25rem;
-		\n margin-top: 0;
+		\n margin-top: auto;
 	}
 
 	\n\n .inner .px__82f07 .botText__82f07 {
@@ -2788,7 +2857,7 @@ let CSS = webpackify(`\n
 	}
 
   \n\n .theme-dark #app-mount .roleName_af3987[style*="color: var(--text-default);"] {
-    \n color: hsla(0, 0%, 100%, .8) !important; \n
+    \n color: hsla(0, 0%, 100%, .8) !important; \n font-weight: 500; \n
   }
 
   \n\n .inner .roleListContainer_af3987 {
@@ -2818,7 +2887,7 @@ let CSS = webpackify(`\n
     }
   }
 
-  \n\n .activityProfile:not(:has(.bodyNormal .assets, .bodyNormal .ellipsis, .bodyNormal .streamPreviewImage)) .headerText {
+  \n\n .activityProfile:not(:has(.bodyNormal .assets, .bodyNormal .container_e928f4, .bodyNormal .ellipsis, .bodyNormal .streamPreviewImage)) .headerText {
     \n margin-bottom: 0px !important; \n
   }
 
@@ -2838,13 +2907,20 @@ let CSS = webpackify(`\n
 		\n color: var(--text-muted); \n
 	}
 
-  .inner .button_a22cb0 {
-    border-radius: 3px;
+  \n\n .inner .button_a22cb0 {
+    \n border-radius: 3px; \n border: none; \n
   }
 
-  .inner .sm_a22cb0 .buttonChildrenWrapper_a22cb0 {
-    min-height: 28px;
-    min-width: 28px;
+  \n\n .profileButtons .sm_a22cb0 .buttonChildrenWrapper_a22cb0 {
+    \n min-width: auto; \n min-height: auto; \n
+  }
+
+  \n\n .userInfoSection .primary_a22cb0 {
+    \n min-height: 32px; \n min-width: 60px; \n padding: 2px 16px; \n
+  }
+
+  \n\n .userInfoSection .sm_a22cb0.hasText_a22cb0 .buttonChildrenWrapper_a22cb0 {
+    \n min-width: auto; \n min-height: auto; \n padding: unset; \n overflow: visible; \n
   }
 
   h2.text-xs\\/semibold_cf4812.defaultColor__5345c {
@@ -2956,34 +3032,6 @@ let CSS = webpackify(`\n
 
   \n .activityProfile .ellipsis {
     overflow: visible;
-  }
-
-  \n .userInfoSection .rolesList .role {
-    height: 22px; min-height: 22px !important; border: 1px solid; border-radius: 11px; padding: 2px 4px; background-color: rgba(0, 0, 0, 0) !important; display: inline-flex; align-items: center;
-  }
-
-  \n .userInfoSection .rolesList .role .roleName {
-    margin-right: 0; font-size: 12px; font-weight: 500;
-  }
-
-  \n .userInfoSection .rolesList .addButton {
-    align-items: center; border: 1px solid var(--interactive-text-default); border-radius: 11px; box-sizing: border-box; color: var(--interactive-text-default); cursor: pointer; display: inline-flex; gap: 2px; height: 22px; min-width: 22px; justify-content: center; background-color: rgba(0, 0, 0, 0) !important;
-  }
-
-  \n .userInfoSection .rolesList .addButton svg {
-    width: 12px; height: 12px;
-  }
-
-  \n .userInfoSection .rolesList .role:has(.twoColorGradient_e5de78, .gradientDotAnimation_e5de78) {
-    transform: translate(0); border: 0 !important;
-  }
-
-  \n .userInfoSection .rolesList .role:has(.twoColorGradient_e5de78, .gradientDotAnimation_e5de78) .roleCircle__4f569 {
-    margin-left: 3px !important;
-  }
-
-  \n .userInfoSection .rolesList .role:has(.twoColorGradient_e5de78, .gradientDotAnimation_e5de78) .roleName {
-    margin-right: -1px;
   }
 
   \n .nameSection {
@@ -3164,6 +3212,10 @@ let CSS = webpackify(`\n
     \n margin-right: 6px; \n
   }
 
+  \n .profileButtons .sm_a22cb0 .buttonChildrenWrapper_a22cb0:has(path[d="M4 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10-2a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm8 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"],path[d="M12 22a10 10 0 1 0-8.45-4.64c.13.19.11.44-.04.61l-2.06 2.37A1 1 0 0 0 2.2 22H12Z"]) {
+    \n min-width: 24px; min-height: 24px; \n
+  }
+
   \n .profileButtons {
     \n display: flex; \n align-items: center; \n gap: 8px; \n .lookFilled:is(.colorBrand, .colorPrimary:is(.grow)), .hasText:not(.primaryFilled) {
       \n background: var(--green, var(--control-primary-background-default)); \n svg {
@@ -3174,8 +3226,8 @@ let CSS = webpackify(`\n
     }
 
     \n .lookFilled:is(.colorBrand, .colorPrimary:is(.grow)), .hasText {
-      \n padding: 2px 16px; \n .buttonChildrenWrapper {
-        \n padding: unset; \n
+      \n padding: 2px 16px; \n min-width: 60px; \n min-height: 32px; \n .buttonChildrenWrapper {
+        \n padding: unset; \n overflow: visible; \n
       }
 
       \n
@@ -3190,7 +3242,7 @@ let CSS = webpackify(`\n
     }
 
     \n .bannerButton, .sm:not(.hasText) {
-      \n background: unset !important; \n border: unset !important; \n color: #7c7e81; \n width: var(--custom-button-button-sm-height); \n padding: 0; \n svg {
+      \n background: unset !important; \n border: unset !important; \n color: #7c7e81; \n width: 24px; \n padding: 0; \n svg {
         \n stroke: #7c7e81; \n
       }
 
@@ -3353,7 +3405,7 @@ let CSS = webpackify(`\n
     \n overflow: hidden; \n white-space: nowrap; \n width: 100%; \n
   }
 
-  \n .rolesList {
+  \n .inner .rolesList {
     \n [data-text-variant="text-xs/normal"] {
       \n font-weight: 500; \n
     }
@@ -3683,7 +3735,7 @@ let CSS = webpackify(`\n
 
 \n .activityProfile .actionsProfile .sm:not(.hasText) {
   \n padding: 0;
-  \n width: calc(var(--custom-button-button-sm-height) + 4px);
+  \n width: 28px;
   \n
 }
 
@@ -3705,7 +3757,7 @@ let CSS = webpackify(`\n
 }
 
 \n:where(.button).icon {
-  \n width: var(--custom-button-button-sm-height) !important;
+  \n width: 24px !important;
   \n
 }
 
