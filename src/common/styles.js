@@ -1302,7 +1302,7 @@ let CSS = webpackify(`\n
 
 \n .activityProfile .actionsProfile .sm:not(.hasText) {
   \n padding: 0;
-  \n width: 28px;
+  \n width: calc(var(--custom-button-button-sm-height) + 4px);
   \n
 }
 
