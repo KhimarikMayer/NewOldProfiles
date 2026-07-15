@@ -15,7 +15,7 @@ function getWidgetIntl(widget) {
     return header;
 }
 
-export function WidgetBuilder({ widget, user }) {
+export function WidgetBuilder({ widget, user, CustomWidgetCard }) {
     const [isLoaded, setIsLoaded] = useState(false);
     const gameIds = Array.isArray(widget.games) ? widget.games.map(game => game.applicationId) : [];
     const games = useStateFromStores([ApplicationStore], () => gameIds.map(id => ApplicationStore.getApplication(id)));
@@ -23,7 +23,7 @@ export function WidgetBuilder({ widget, user }) {
 
     useEffect(() => {
         (async () => {
-            if (isLoaded) return;
+            if (isLoaded || !gameIds.length) return;
             const urlSearch = new URLSearchParams(gameIds.map(x => ["application_ids", x])).toString();
             const applicationPublic = await RestAPI.get({ url: Endpoints.APPLICATIONS_PUBLIC, query: urlSearch });
 
@@ -37,5 +37,8 @@ export function WidgetBuilder({ widget, user }) {
         })()
     }, [gameIds]);
 
-    return <BoardBuilder widget={widget} header={header} games={games} user={user} />
+    return widget.type === "application" ? <div className="userInfoSection">
+        <CustomWidgetCard index={0} user={user} widget={widget} key={`application-${widget.applicationId}`} /> 
+    </div>
+    : <BoardBuilder widget={widget} header={header} games={games} user={user} />
 }
